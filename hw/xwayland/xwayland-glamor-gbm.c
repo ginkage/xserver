@@ -241,10 +241,14 @@ xwl_glamor_gbm_create_pixmap_for_bo(ScreenPtr screen, struct gbm_bo *bo,
             ADD_ATTR(img_attrs, attr_num, gbm_bo_get_offset(bo, plane));
             ADD_ATTR(img_attrs, attr_num, planeAttrs[plane][PLANE_PITCH]);
             ADD_ATTR(img_attrs, attr_num, gbm_bo_get_stride_for_plane(bo, plane));
-            ADD_ATTR(img_attrs, attr_num, planeAttrs[plane][PLANE_MODIFIER_LO]);
-            ADD_ATTR(img_attrs, attr_num, (uint32_t)(modifier & 0xFFFFFFFFULL));
-            ADD_ATTR(img_attrs, attr_num, planeAttrs[plane][PLANE_MODIFIER_HI]);
-            ADD_ATTR(img_attrs, attr_num, (uint32_t)(modifier >> 32ULL));
+            /* Mali reports DRM_FORMAT_MOD_INVALID; passing modifier attrs in
+             * that case makes eglCreateImageKHR (DRI3 import) fail. */
+            if (modifier != DRM_FORMAT_MOD_INVALID) {
+                ADD_ATTR(img_attrs, attr_num, planeAttrs[plane][PLANE_MODIFIER_LO]);
+                ADD_ATTR(img_attrs, attr_num, (uint32_t)(modifier & 0xFFFFFFFFULL));
+                ADD_ATTR(img_attrs, attr_num, planeAttrs[plane][PLANE_MODIFIER_HI]);
+                ADD_ATTR(img_attrs, attr_num, (uint32_t)(modifier >> 32ULL));
+            }
         }
         ADD_ATTR(img_attrs, attr_num, EGL_NONE);
 #undef ADD_ATTR
