@@ -57,6 +57,10 @@
 #include "fractional-scale-v1-client-protocol.h"
 #include "linux-drm-syncobj-v1-client-protocol.h"
 
+#ifdef XWL_HAS_GLAMOR
+#include "glamor.h"
+#endif
+
 #define DELAYED_WL_SURFACE_DESTROY 1000 /* ms */
 
 #define MAX_ROOTFUL_WIDTH 32767
@@ -2034,6 +2038,15 @@ xwl_window_attach_buffer(struct xwl_window *xwl_window)
     int i;
 
     pixmap = xwl_window_swap_pixmap(xwl_window, TRUE);
+
+#ifdef XWL_HAS_GLAMOR
+    /* XWAYLAND_LITE_SYNC follows the NVIDIA path: with implicit sync absent on
+     * arm/Mali, finish per-damage here instead of globally in the block
+     * handler (see glamor_block_handler). */
+    if (xwl_screen->glamor && getenv("XWAYLAND_LITE_SYNC"))
+        glamor_finish(xwl_screen->screen);
+#endif
+
     buffer = xwl_pixmap_get_wl_buffer(pixmap);
 
     if (!buffer) {

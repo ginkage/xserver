@@ -276,7 +276,14 @@ void
 glamor_block_handler(ScreenPtr screen)
 {
     glamor_screen_private *glamor_priv = glamor_get_screen_private(screen);
-    glamor_flush(glamor_priv);
+
+    /* Without implicit sync (arm/Mali, NVIDIA) the buffer must be fully rendered
+     * before the compositor samples it; glFlush is not enough. XWAYLAND_LITE_SYNC
+     * opts back into the lighter flush (and moves the finish to post_damage). */
+    if (getenv("XWAYLAND_LITE_SYNC"))
+        glamor_flush(glamor_priv);
+    else
+        glamor_finish(screen);
 }
 
 static void
@@ -284,7 +291,10 @@ _glamor_block_handler(ScreenPtr screen, void *timeout)
 {
     glamor_screen_private *glamor_priv = glamor_get_screen_private(screen);
 
-    glamor_flush(glamor_priv);
+    if (getenv("XWAYLAND_LITE_SYNC"))
+        glamor_flush(glamor_priv);
+    else
+        glamor_finish(screen);
 
     screen->BlockHandler = glamor_priv->saved_procs.block_handler;
     screen->BlockHandler(screen, timeout);
