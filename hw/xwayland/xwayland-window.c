@@ -51,6 +51,10 @@
 #include "xdg-shell-client-protocol.h"
 #include "xwayland-shell-v1-client-protocol.h"
 
+#ifdef XWL_HAS_GLAMOR
+#include "glamor.h"
+#endif
+
 #define DELAYED_WL_SURFACE_DESTROY 1000 /* ms */
 
 #define MAX_ROOTFUL_WIDTH 32767
@@ -1403,6 +1407,12 @@ xwl_window_attach_buffer(struct xwl_window *xwl_window)
 
 #ifdef XWL_HAS_GLAMOR
     if (xwl_screen->glamor) {
+        /* XWAYLAND_LITE_SYNC follows the NVIDIA path: with implicit sync absent on
+         * arm/Mali, finish per-damage here instead of globally in the block
+         * handler (see glamor_block_handler). */
+        if (getenv("XWAYLAND_LITE_SYNC"))
+            glamor_finish(xwl_screen->screen);
+
         if (!xwl_glamor_post_damage(xwl_window, pixmap, region)) {
             ErrorF("glamor: Failed to post damage\n");
             return FALSE;
