@@ -121,9 +121,12 @@ xwl_glamor_init_wl_registry(struct xwl_screen *xwl_screen,
 static Bool
 xwl_glamor_has_wl_interfaces(struct xwl_screen *xwl_screen)
 {
+    /* The arm/Mali stack exposes neither wl_drm nor linux-dmabuf v4 feedback,
+     * only linux-dmabuf v3. Accept that case too; the DRM device is then picked
+     * directly in xwl_glamor_gbm_init_main_dev(). */
     if (!xwl_glamor_has_wl_drm(xwl_screen) &&
-        xwl_screen->dmabuf_protocol_version < 4) {
-        LogMessageVerb(X_INFO, 3, "glamor: 'wl_drm' not supported and linux-dmabuf v4 not supported\n");
+        xwl_screen->dmabuf_protocol_version < 3) {
+        LogMessageVerb(X_INFO, 3, "glamor: neither 'wl_drm' nor 'linux-dmabuf' supported\n");
         return FALSE;
     }
 

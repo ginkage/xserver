@@ -1667,6 +1667,37 @@ xwl_glamor_gbm_init_main_dev(struct xwl_screen *xwl_screen)
     struct xwl_gbm_private *xwl_gbm = xwl_gbm_get(xwl_screen);
     drmDevice *main_dev;
 
+    /* linux-dmabuf v3 has no per-surface feedback, so the compositor never
+     * advertises a main_device (the arm/Mali case, which also lacks wl_drm).
+     * Open a DRM node directly instead - overridable with XWAYLAND_DRM_DEVICE. */
+    if (xwl_screen->dmabuf_protocol_version < 4) {
+        const char *dev_path = getenv("XWAYLAND_DRM_DEVICE");
+
+        if (!dev_path)
+            dev_path = "/dev/dri/card0";
+
+        xwl_gbm->device_name = strdup(dev_path);
+        if (!xwl_gbm->device_name)
+            return FALSE;
+
+        xwl_gbm->drm_fd = open(xwl_gbm->device_name, O_RDWR | O_CLOEXEC);
+        if (xwl_gbm->drm_fd < 0) {
+            ErrorF("glamor: could not open %s (%s)\n",
+                   xwl_gbm->device_name, strerror(errno));
+            return FALSE;
+        }
+
+        /* Some Mali display nodes expose no drmDevice; that is not fatal. */
+        if (drmGetDevice2(xwl_gbm->drm_fd, 0, &xwl_gbm->device) != 0)
+            xwl_gbm->device = NULL;
+
+        xwl_gbm->fd_render_node = TRUE;
+        LogMessageVerb(X_INFO, 3,
+                       "glamor: linux-dmabuf v3, using DRM device %s directly\n",
+                       xwl_gbm->device_name);
+        return TRUE;
+    }
+
     while (!xwl_screen->default_feedback.feedback_done) {
         if (wl_display_dispatch(xwl_screen->display) < 0) {
             ErrorF("Failed to dispatch Wayland display\n");
