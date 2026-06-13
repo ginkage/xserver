@@ -1,3 +1,12 @@
+xwayland (2:23.2.6-1ubuntu0.8+cixmali1) noble; urgency=medium
+
+  * Fork build for arm/Mali (RK3588): carry CIX's glamor/Xwayland-on-Mali
+    patches on top of Ubuntu's 23.2.6 so DRI3/glamor work on the proprietary
+    Mali stack (linux-dmabuf v3, no wl_drm, no implicit sync). The DRM device
+    is overridable via XWAYLAND_DRM_DEVICE. See the CIX: commits.
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Sat, 13 Jun 2026 10:19:22 +0000
+
 xwayland (2:23.2.6-1ubuntu0.8) noble; urgency=medium
 
   * xwayland-glamor-gbm-make-wl_drm-optional.diff: Fix glamor with mesa
