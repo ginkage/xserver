@@ -1,0 +1,287 @@
+xwayland (2:23.2.6-1ubuntu0.8) noble; urgency=medium
+
+  * xwayland-glamor-gbm-make-wl_drm-optional.diff: Fix glamor with mesa
+    25.2+. (LP: #2126037)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 28 Nov 2025 10:46:44 +0200
+
+xwayland (2:23.2.6-1ubuntu0.7) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Use-after-free in XPresentNotify structures creation
+    - debian/patches/CVE-2025-62229.patch: fix use-after-free in
+      present/present_notify.c.
+    - CVE-2025-62229
+  * SECURITY UPDATE: Use-after-free in Xkb client resource removal
+    - debian/patches/CVE-2025-62230-1.patch: make the RT_XKBCLIENT resource
+      private in xkb/xkb.c, include/xkbsrv.h.
+    - debian/patches/CVE-2025-62230-2.patch: free the XKB resource when
+      freeing XkbInterest in xkb/xkbEvents.c.
+    - CVE-2025-62230
+  * SECURITY UPDATE: Value overflow in Xkb extension XkbSetCompatMap()
+    - debian/patches/CVE-2025-62231.patch: prevent overflow in xkb/xkb.c.
+    - CVE-2025-62231
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Thu, 23 Oct 2025 14:29:45 -0400
+
+xwayland (2:23.2.6-1ubuntu0.6) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Out-of-bounds access in X Rendering extension
+    - debian/patches/CVE-2025-49175.patch: avoid 0 or less animated cursors
+      in render/animcur.c, render/render.c.
+    - CVE-2025-49175
+  * SECURITY UPDATE: Integer overflow in Big Requests Extension
+    - debian/patches/CVE-2025-49176.patch: do not overflow the integer size
+      with BigRequest in dix/dispatch.c, os/io.c.
+    - CVE-2025-49176
+  * SECURITY UPDATE: Data leak in XFIXES Extension 6
+    - debian/patches/CVE-2025-49177.patch: check request length for
+      SetClientDisconnectMode in xfixes/disconnect.c.
+    - CVE-2025-49177
+  * SECURITY UPDATE: Unprocessed client request via bytes to ignore
+    - debian/patches/CVE-2025-49178.patch: account for bytes to ignore when
+      sharing input buffer in os/io.c.
+    - CVE-2025-49178
+  * SECURITY UPDATE: Integer overflow in X Record extension
+    - debian/patches/CVE-2025-49179.patch: check for overflow in
+      RecordSanityCheckRegisterClients() in record/record.c.
+    - CVE-2025-49179
+  * SECURITY UPDATE: Integer overflow in RandR extension
+    - debian/patches/CVE-2025-49180-1.patch: check for overflow in
+      RRChangeProviderProperty() in randr/rrproviderproperty.c.
+    - CVE-2025-49180
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Wed, 11 Jun 2025 09:02:41 -0400
+
+xwayland (2:23.2.6-1ubuntu0.5) noble; urgency=medium
+
+  * Backport patches to avoid crash after the busy-loop fix (LP: 2043517).
+    With the busy-loop fixed, XWayland can now proceed further and may
+    encounter a new crash (LP: #2096653).
+    - xwayland-glamor-cleanup-xwl_gbm-only-once.patch
+    - xwayland-glamor-disable-after-gbm-cleanup.patch
+
+ -- Alessandro Astone <alessandro.astone@canonical.com>  Wed, 26 Mar 2025 12:19:46 +0100
+
+xwayland (2:23.2.6-1ubuntu0.4) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Use-after-free of the root cursor
+    - debian/patches/CVE-2025-26594-1.patch: refuse to free the root cursor
+      in dix/dispatch.c.
+    - debian/patches/CVE-2025-26594-2.patch: keep a ref to the rootCursor
+      in dix/main.c.
+    - CVE-2025-26594
+  * SECURITY UPDATE: Buffer overflow in XkbVModMaskText()
+    - debian/patches/CVE-2025-26595.patch: fix bounds check in
+      xkb/xkbtext.c.
+    - CVE-2025-26595
+  * SECURITY UPDATE: Heap overflow in XkbWriteKeySyms()
+    - debian/patches/CVE-2025-26596.patch: fix computation of
+      XkbSizeKeySyms in xkb/xkb.c.
+    - CVE-2025-26596
+  * SECURITY UPDATE: Buffer overflow in XkbChangeTypesOfKey()
+    - debian/patches/CVE-2025-26597.patch: also resize key actions in
+      xkb/XKBMisc.c.
+    - CVE-2025-26597
+  * SECURITY UPDATE: Out-of-bounds write in CreatePointerBarrierClient()
+    - debian/patches/CVE-2025-26598.patch: fix barrier device search in
+      Xi/xibarriers.c.
+    - CVE-2025-26598
+  * SECURITY UPDATE: Use of uninitialized pointer in compRedirectWindow()
+    - debian/patches/CVE-2025-26599-1.patch: handle failure to redirect in
+      composite/compalloc.c.
+    - debian/patches/CVE-2025-26599-2.patch: initialize border clip even
+      when pixmap alloc fails in composite/compalloc.c.
+    - CVE-2025-26599
+  * SECURITY UPDATE: Use-after-free in PlayReleasedEvents()
+    - debian/patches/CVE-2025-26600.patch: dequeue pending events on frozen
+      device on removal in dix/devices.c.
+    - CVE-2025-26600
+  * SECURITY UPDATE: Use-after-free in SyncInitTrigger()
+    - debian/patches/CVE-2025-26601-1.patch: do not let sync objects
+      uninitialized in Xext/sync.c.
+    - debian/patches/CVE-2025-26601-2.patch: check values before applying
+      changes in Xext/sync.c.
+    - debian/patches/CVE-2025-26601-3.patch: do not fail
+      SyncAddTriggerToSyncObject() in Xext/sync.c.
+    - debian/patches/CVE-2025-26601-4.patch: apply changes last in
+      SyncChangeAlarmAttributes() in Xext/sync.c.
+    - CVE-2025-26601
+  * Note: this package does _not_ contain the changes from
+    (2:23.2.6-1ubuntu0.3) in noble-proposed.
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Wed, 19 Feb 2025 10:00:20 -0500
+
+xwayland (2:23.2.6-1ubuntu0.2) noble; urgency=medium
+
+  * Backport patch to fix busy-loop on inactive VT (LP: #2043517)
+
+ -- Alessandro Astone <alessandro.astone@canonical.com>  Fri, 22 Nov 2024 16:45:25 +0100
+
+xwayland (2:23.2.6-1ubuntu0.1) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Heap-based buffer overflow in _XkbSetCompatMap
+    - debian/patches/CVE-2024-9632.patch: properly update size in
+      xkb/xkb.c.
+    - CVE-2024-9632
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Fri, 11 Oct 2024 10:40:00 -0400
+
+xwayland (2:23.2.6-1) unstable; urgency=medium
+
+  * New upstream release.
+    - CVE-2024-31080
+    - CVE-2024-31081
+    - CVE-2024-31083
+  * control: Add libtirpc-dev to build-depends. (Closes: #1065184)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Sat, 13 Apr 2024 16:58:45 +0300
+
+xwayland (2:23.2.4-1) unstable; urgency=medium
+
+  * New upstream release
+    - CVE-2023-6816
+    - CVE-2024-0229
+    - CVE-2024-21885
+    - CVE-2024-21886
+    - CVE-2024-0408
+    - CVE-2024-0409
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 17 Jan 2024 11:20:05 +0100
+
+xwayland (2:23.2.3-1) unstable; urgency=medium
+
+  * New upstream release.
+    - CVE-2023-6377
+    - CVE-2023-6478
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 13 Dec 2023 10:35:39 +0200
+
+xwayland (2:23.2.2-1) unstable; urgency=medium
+
+  * New upstream release.
+    - CVE-2023-5367
+    - CVE-2023-5380
+    - CVE-2023-5574
+  * control: Add libdecor-0-dev to build-depends. (Closes: #1054529)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 25 Oct 2023 10:51:36 +0300
+
+xwayland (2:23.2.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 20 Sep 2023 16:09:23 +0300
+
+xwayland (2:23.2.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * patches: Refreshed.
+  * control: Bump x11proto-dev depends.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 16 Aug 2023 15:27:59 +0300
+
+xwayland (2:23.1.1-1) experimental; urgency=medium
+
+  * New upstream release.
+  * control: Fix cross-building, add libwayland-dev:native to build-
+    depends. (Closes: #1002515)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 11 May 2023 13:10:04 +0300
+
+xwayland (2:23.1.0-1) experimental; urgency=medium
+
+  * New upstream release.
+  * patches: Refreshed.
+  * install: Add desktop file.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 24 Mar 2023 11:26:25 +0200
+
+xwayland (2:22.1.8-1) unstable; urgency=medium
+
+  * New upstream release.
+    - CVE-2023-0494
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 07 Feb 2023 15:14:38 +0200
+
+xwayland (2:22.1.7-1) unstable; urgency=medium
+
+  * New upstream release.
+  * rules, install: Ship the .pc file. (Closes: #1025742)
+  * rules: Enable full hardening flags. (Closes: #1026168)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 24 Jan 2023 09:37:32 +0200
+
+xwayland (2:22.1.6-1) unstable; urgency=medium
+
+  * New upstream release.
+    - CVE-2022-46340, CVE-2022-46341, CVE-2022-46342, CVE-2022-46343,
+      CVE-2022-46344, CVE-2022-4283
+  * Add signing-key from Peter Hutterer.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 14 Dec 2022 16:26:30 +0200
+
+xwayland (2:22.1.5-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 03 Nov 2022 15:38:36 +0100
+
+xwayland (2:22.1.3-2) unstable; urgency=medium
+
+  [ Daniel van Vugt ]
+  * Add xwayland-Detect-gbm_bo_get_fd_for_plane-at-runtime.patch
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 25 Aug 2022 13:03:43 +0300
+
+xwayland (2:22.1.3-1) unstable; urgency=medium
+
+  * New upstream release.
+    - CVE-2022-2319, CVE-2022-2320
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 26 Jul 2022 14:39:48 +0300
+
+xwayland (2:22.1.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 02 Jun 2022 15:16:00 +0300
+
+xwayland (2:22.1.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Fri, 01 Apr 2022 09:40:47 +0300
+
+xwayland (2:22.1.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * control: Bump policy to 4.6.0.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 16 Feb 2022 20:20:06 +0200
+
+xwayland (2:22.0.99.902-1) unstable; urgency=medium
+
+  * New upstream release candidate.
+  * control: Add libxcvt-dev to build-depends.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Thu, 03 Feb 2022 12:56:33 +0200
+
+xwayland (2:21.1.4-1) unstable; urgency=medium
+
+  * New upstream release.
+  * render: Fix out of bounds access in SProcRenderCompositeGlyphs()
+    [CVE-2021-4008]
+  * xfixes: Fix out of bounds access in *ProcXFixesCreatePointerBarrier()
+    [CVE-2021-4009]
+  * Xext: Fix out of bounds access in SProcScreenSaverSuspend()
+    [CVE-2021-4010]
+  * record: Fix out of bounds access in SwapCreateRegister()
+    [CVE-2021-4011]
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 14 Dec 2021 16:19:18 +0200
+
+xwayland (2:21.1.3-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #981841, #992146)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Mon, 08 Nov 2021 16:39:28 +0200

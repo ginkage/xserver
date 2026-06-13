@@ -1,0 +1,42 @@
+From f18a83d6f198b027a1c1dd3d9d7ba2114896e31a Mon Sep 17 00:00:00 2001
+From: Olivier Fourdan <ofourdan@redhat.com>
+Date: Tue, 4 Feb 2025 11:35:36 +0100
+Subject: [PATCH] xwayland/glamor: Disable GLAMOR after GBM cleanup
+
+The cleanup function for GBM is called on the various error paths.
+
+Once xwl_glamor_gbm_cleanup() has been called, GBM support is no longer
+usable (and the corresponding data structures are freed), so there is
+no way we can keep using GLAMOR after that point.
+
+Make sure to explicitly disable GLAMOR support in that case, so we do
+not crash later on trying to use GBM.
+
+Signed-off-by: Olivier Fourdan <ofourdan@redhat.com>
+(cherry picked from commit e8784b7d897aa22ed93f63a57dea04bdfa784388)
+
+Part-of: <https://gitlab.freedesktop.org/xorg/xserver/-/merge_requests/1766>
+
+Origin: https://gitlab.freedesktop.org/xorg/xserver/-/commit/f18a83d6f198b027a1c1dd3d9d7ba2114896e31a
+Bug: https://gitlab.freedesktop.org/xorg/xserver/-/issues/1785
+But-Ubuntu: https://bugs.launchpad.net/bugs/2096653
+
+---
+ hw/xwayland/xwayland-glamor-gbm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: xwayland-23.2.6/hw/xwayland/xwayland-glamor-gbm.c
+===================================================================
+--- xwayland-23.2.6.orig/hw/xwayland/xwayland-glamor-gbm.c
++++ xwayland-23.2.6/hw/xwayland/xwayland-glamor-gbm.c
+@@ -601,6 +601,10 @@ xwl_glamor_gbm_cleanup(struct xwl_screen
+     if (!xwl_gbm)
+         return;
+ 
++    /* Cannot use GBM after clean-up, disable GLAMOR support from now on */
++    ErrorF("XWAYLAND: Disabling GLAMOR support\n");
++    xwl_screen->glamor = 0;
++
+     if (xwl_gbm->device_name)
+         free(xwl_gbm->device_name);
+     drmFreeDevice(&xwl_gbm->device);

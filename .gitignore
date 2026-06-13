@@ -1,0 +1,13 @@
+# Debian build artifacts
+/obj-*/
+/debian/.debhelper/
+/debian/xwayland/
+/debian/files
+/debian/*.substvars
+/debian/*.debhelper.log
+/debian/debhelper-build-stamp
+*.deb
+*.ddeb
+*.buildinfo
+*.changes
+/build/

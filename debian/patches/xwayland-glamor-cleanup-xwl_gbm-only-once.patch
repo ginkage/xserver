@@ -1,0 +1,35 @@
+Subject: xwayland-gramor: Cleanup xwl_gbm only once to avoid double-free
+Author: Michel Dänzer <mdaenzer@redhat.com>
+
+With backport "xwayland-glamor-Drop-expecting_event-bailing-from-xw.patch" it
+is now possible end up in a situation where we free the xwl_gbm memory twice.
+Previous to the backport, the code was still wrong but xwayland got stuck
+waiting forever before it could reach the point where it double-frees.
+
+Origin: https://gitlab.freedesktop.org/xorg/xserver/-/issues/1785#note_2750981
+Bug: https://gitlab.freedesktop.org/xorg/xserver/-/issues/1785
+But-Ubuntu: https://bugs.launchpad.net/bugs/2096653
+
+Index: xwayland-23.2.6/hw/xwayland/xwayland-glamor-gbm.c
+===================================================================
+--- xwayland-23.2.6.orig/hw/xwayland/xwayland-glamor-gbm.c
++++ xwayland-23.2.6/hw/xwayland/xwayland-glamor-gbm.c
+@@ -598,6 +598,9 @@ xwl_glamor_gbm_cleanup(struct xwl_screen
+ {
+     struct xwl_gbm_private *xwl_gbm = xwl_gbm_get(xwl_screen);
+ 
++    if (!xwl_gbm)
++        return;
++
+     if (xwl_gbm->device_name)
+         free(xwl_gbm->device_name);
+     drmFreeDevice(&xwl_gbm->device);
+@@ -608,6 +611,8 @@ xwl_glamor_gbm_cleanup(struct xwl_screen
+     if (xwl_gbm->gbm)
+         gbm_device_destroy(xwl_gbm->gbm);
+ 
++    dixSetPrivate(&xwl_screen->screen->devPrivates, &xwl_gbm_private_key,
++                  NULL);
+     free(xwl_gbm);
+ }
+ 
