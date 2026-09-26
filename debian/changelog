@@ -1,3 +1,12 @@
+xwayland (2:24.1.10-1+cixmali1) resolute; urgency=medium
+
+  * Fork build for arm/Mali (RK3588): carry CIX's glamor/Xwayland-on-Mali
+    patches on top of Ubuntu's 24.1.10 so DRI3/glamor work on the proprietary
+    Mali stack (linux-dmabuf v3, no wl_drm, no implicit sync). The DRM device
+    is overridable via XWAYLAND_DRM_DEVICE. See the CIX: commits.
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Sat, 26 Sep 2026 10:02:51 +0100
+
 xwayland (2:24.1.10-1) unstable; urgency=medium
 
   * New upstream release.
