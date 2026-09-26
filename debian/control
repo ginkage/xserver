@@ -39,6 +39,10 @@ Package: xwayland
 Architecture: linux-any
 Depends:
  xserver-common,
+# Mali's X11 EGL (libmali) dlopen()s these by name; without them GTK4 clients
+# such as mutter-x11-frames deadlock and no X11 window ever gets mapped.
+ libx11-xcb-dev,
+ libxcb-dri2-0,
  ${shlibs:Depends},
  ${misc:Depends},
 Description: X server for running X clients under Wayland

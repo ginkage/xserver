@@ -4,6 +4,9 @@ xwayland (2:24.1.10-1+cixmali1) resolute; urgency=medium
     patches on top of Ubuntu's 24.1.10 so DRI3/glamor work on the proprietary
     Mali stack (linux-dmabuf v3, no wl_drm, no implicit sync). The DRM device
     is overridable via XWAYLAND_DRM_DEVICE. See the CIX: commits.
+  * Depend on libx11-xcb-dev and libxcb-dri2-0: Mali's X11 EGL dlopen()s
+    libX11-xcb.so and libxcb-dri2.so.0, and without them X11 GL clients
+    (including mutter-x11-frames) fail or hang.
 
  -- Ivan Podogov <ginkage.uk@gmail.com>  Sat, 26 Sep 2026 10:02:51 +0100
 
