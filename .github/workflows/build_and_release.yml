@@ -1,0 +1,63 @@
+name: Build and Release Debian Package
+
+on:
+  push:
+    branches:
+      - 24.1.10
+  workflow_dispatch:
+
+jobs:
+
+  build_and_release:
+    name: Build and Release Debian Package
+    runs-on: ubuntu-24.04-arm
+    # Build against resolute's libraries (and its x11proto-dev >= 2024.1), not the
+    # runner's noble ones.
+    container: ubuntu:26.04
+    permissions:
+      contents: write
+    steps:
+
+      - name: Install build tools
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential debhelper devscripts quilt fakeroot dpkg-dev \
+            git ca-certificates
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          # Pull Xwayland's build-deps straight from debian/control - no deb-src needed.
+          DEBIAN_FRONTEND=noninteractive apt-get build-dep -y .
+          apt-get clean
+
+      - name: Build Debian package
+        # The Ubuntu quilt patches are already applied in-tree (.pc/ retained), so the
+        # 3.0 (quilt) build is a no-op on top of the fork's commits. Skip lintian.
+        run: |
+          debuild --no-lintian -us -uc -b
+          cp -a ../xwayland_*.deb ./
+
+      - name: Get version
+        id: get_version
+        run: |
+          ver="$(dpkg-parsechangelog --show-field Version)"
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          # git tags cannot contain ':' (epoch) or '+' (local version) - sanitise them.
+          echo "tag=$(echo "$ver" | tr ':+~' '---')" >> "$GITHUB_OUTPUT"
+
+      - name: Get commit hash
+        id: get_commit_hash
+        uses: prompt/actions-commit-hash@v3
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.get_version.outputs.tag }}-${{ steps.get_commit_hash.outputs.short }}
+          tag_name: v${{ steps.get_version.outputs.tag }}-${{ steps.get_commit_hash.outputs.short }}
+          generate_release_notes: true
+          files: |
+            ./*.deb
