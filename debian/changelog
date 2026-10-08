@@ -1,3 +1,12 @@
+xwayland (2:23.2.6-1ubuntu0.8+cixmali2) noble; urgency=medium
+
+  * Don't lock the pointer for warp emulation or a hidden confined cursor
+    when the seat has no wl_pointer (no mouse attached). Xwayland passed a
+    null wl_pointer to zwp_pointer_constraints_v1.lock_pointer, which
+    libwayland rejects, and the compositor dropped the Xwayland connection.
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Thu, 08 Oct 2026 17:36:26 +0100
+
 xwayland (2:23.2.6-1ubuntu0.8+cixmali1) noble; urgency=medium
 
   * Fork build for arm/Mali (RK3588): carry CIX's glamor/Xwayland-on-Mali
