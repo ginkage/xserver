@@ -3473,6 +3473,10 @@ xwl_seat_can_emulate_pointer_warp(struct xwl_seat *xwl_seat)
     if (!xwl_seat->pointer)
         return FALSE;
 
+    /* The X pointer device outlives the seat's wl_pointer capability */
+    if (!xwl_seat->wl_pointer)
+        return FALSE;
+
     xwl_screen = xwl_seat->xwl_screen;
 
     if (!xwl_screen->relative_pointer_manager)
@@ -3518,6 +3522,9 @@ xwl_seat_maybe_lock_on_hidden_cursor(struct xwl_seat *xwl_seat)
      * pointer for so the relative pointer is used.
      */
     if (xwl_seat->x_cursor)
+        return FALSE;
+
+    if (!xwl_seat->wl_pointer)
         return FALSE;
 
     if (!xwl_seat->focus_window)
