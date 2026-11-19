@@ -1818,8 +1818,12 @@ xwl_glamor_gbm_init_egl(struct xwl_screen *xwl_screen)
         ErrorF("Could not determine EGL vendor\n");
         goto error;
     }
-    /* NVIDIA driver does not support implicit sync */
-    xwl_gbm->implicit_sync = !strstr(egl_vendor, "NVIDIA");
+    /* The NVIDIA driver does not support implicit sync, and neither does the
+     * Arm Mali driver ("ARM"): its kernel driver (kbase) attaches no fences to
+     * dma-bufs, so a compositor would sample buffers the GPU is still rendering.
+     */
+    xwl_gbm->implicit_sync = !strstr(egl_vendor, "NVIDIA") &&
+                             strcmp(egl_vendor, "ARM") != 0;
 #ifdef DRI3
     if (xwl_gbm_supports_syncobjs(xwl_screen) &&
         epoxy_has_egl_extension(xwl_screen->egl_display,
