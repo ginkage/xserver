@@ -1,3 +1,15 @@
+xwayland (2:24.1.10-1+cixmali3) resolute; urgency=medium
+
+  * Treat the Arm Mali EGL stack (EGL_VENDOR "ARM") as lacking implicit
+    sync, like NVIDIA's: its kernel driver attaches no fences to dma-bufs.
+    Window buffers are now presented only once the GPU has finished them,
+    and Present no longer flips unsynchronized client buffers to the
+    compositor.
+  * Revert the CIX glamor_block_handler glFinish patch, superseded by the
+    above; it finished all GL work on every block handler, also on Mesa.
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Thu, 19 Nov 2026 23:13:40 +0000
+
 xwayland (2:24.1.10-1+cixmali2) resolute; urgency=medium
 
   * Don't lock the pointer for warp emulation or a hidden confined cursor
