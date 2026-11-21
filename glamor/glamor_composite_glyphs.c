@@ -196,6 +196,24 @@ static const glamor_facet glamor_facet_composite_glyphs_es300 = {
     .locations = glamor_program_location_atlas,
 };
 
+/* The same without dual-source blending: GLSL ES 3.00 requires explicit locations as soon as a shader has more
+ * than one output, so color0/color1 (which only the dual-blend path writes) can't be declared without it. Mesa
+ * accepts the declarations anyway; the Mali driver rejects the shader, and glamor aborts the server on it. */
+static const glamor_facet glamor_facet_composite_glyphs_es300_single = {
+    .name = "composite_glyphs",
+    .version = 130,
+    .vs_vars = ("in vec4 primitive;\n"
+                "in vec2 source;\n"
+                "out vec2 glyph_pos;\n"),
+    .vs_exec = ("       vec2 pos = primitive.zw * vec2(gl_VertexID&1, (gl_VertexID&2)>>1);\n"
+                GLAMOR_POS(gl_Position, (primitive.xy + pos))
+                "       glyph_pos = (source + pos) * ATLAS_DIM_INV;\n"),
+    .fs_vars = ("in vec2 glyph_pos;\n"),
+    .fs_exec = ("       vec4 mask = texture(atlas, glyph_pos);\n"),
+    .source_name = "source",
+    .locations = glamor_program_location_atlas,
+};
+
 static const glamor_facet glamor_facet_composite_glyphs_130 = {
     .name = "composite_glyphs",
     .version = 130,
@@ -472,9 +490,11 @@ glamor_composite_glyphs(CARD8 op,
                         if (glamor_glsl_has_ints(glamor_priv))
                             prog = glamor_setup_program_render(op, src, glyph_pict, dst,
                                                                glyphs_program,
-                                                               glamor_priv->is_gles ?
+                                                               !glamor_priv->is_gles ?
+                                                                   &glamor_facet_composite_glyphs_130 :
+                                                               glamor_priv->has_dual_blend ?
                                                                    &glamor_facet_composite_glyphs_es300 :
-                                                                   &glamor_facet_composite_glyphs_130,
+                                                                   &glamor_facet_composite_glyphs_es300_single,
                                                                glamor_priv->glyph_defines);
                         else
                             prog = glamor_setup_program_render(op, src, glyph_pict, dst,
