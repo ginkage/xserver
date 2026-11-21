@@ -1,3 +1,12 @@
+xwayland (2:24.1.10-1+cixmali5) resolute; urgency=medium
+
+  * glamor: on GLES without GL_EXT_blend_func_extended, don't declare
+    dual-blend outputs in the glyph shader. The Mali driver rejected it and
+    the first subpixel glyphs drawn by an X client killed Xwayland (and
+    gnome-shell with it).
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Sat, 21 Nov 2026 13:51:39 +0000
+
 xwayland (2:24.1.10-1+cixmali4) resolute; urgency=medium
 
   * Without implicit sync in the EGL stack (Arm Mali) and without explicit
