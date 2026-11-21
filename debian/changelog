@@ -1,3 +1,12 @@
+xwayland (2:24.1.10-1+cixmali4) resolute; urgency=medium
+
+  * Without implicit sync in the EGL stack (Arm Mali) and without explicit
+    sync from the compositor, attach a fence for the rendering to window
+    buffers instead of waiting for the GPU (glamor_finish) before presenting
+    them: the compositor waits for it, and the X server no longer blocks.
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Sat, 21 Nov 2026 00:26:51 +0000
+
 xwayland (2:24.1.10-1+cixmali3) resolute; urgency=medium
 
   * Treat the Arm Mali EGL stack (EGL_VENDOR "ARM") as lacking implicit
