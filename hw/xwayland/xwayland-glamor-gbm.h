@@ -44,6 +44,7 @@ drmDevice *xwl_gbm_get_main_device(struct xwl_screen *xwl_screen);
 
 /* Explicit buffer synchronization points */
 Bool xwl_glamor_gbm_set_syncpts(struct xwl_window *xwl_window, PixmapPtr pixmap);
+Bool xwl_glamor_gbm_attach_render_fence(PixmapPtr pixmap);
 void xwl_glamor_gbm_dispose_syncpts(PixmapPtr pixmap);
 void xwl_glamor_gbm_wait_syncpts(PixmapPtr pixmap);
 void xwl_glamor_gbm_wait_release_fence(struct xwl_window *xwl_window,

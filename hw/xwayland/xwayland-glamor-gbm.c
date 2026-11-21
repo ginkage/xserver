@@ -1453,6 +1453,50 @@ xwl_glamor_supports_syncobjs(struct xwl_screen *xwl_screen)
         xwl_gbm_get(xwl_screen)->supports_syncobjs;
 }
 
+/* Make the compositor wait for the rendering queued so far before it uses the pixmap: attach a fence for it
+ * to the pixmap's dma-buf as an implicit write fence. For EGL stacks without implicit sync (the kernel
+ * driver attaches no fences to dma-bufs, as Mali's kbase), when the compositor offers no explicit sync:
+ * compositors wait for a dma-buf's implicit fences before sampling or scanning it out (mutter does so
+ * asynchronously), so this replaces waiting for the GPU here. FALSE if the fence can't be attached.
+ */
+Bool
+xwl_glamor_gbm_attach_render_fence(PixmapPtr pixmap)
+{
+#ifdef DMA_BUF_IOCTL_IMPORT_SYNC_FILE
+    struct xwl_screen *xwl_screen = xwl_screen_get(pixmap->drawable.pScreen);
+    struct xwl_pixmap *xwl_pixmap = xwl_pixmap_get(pixmap);
+    static int have_native_fence = -1;
+    EGLint attribs[] = { EGL_SYNC_NATIVE_FENCE_FD_ANDROID, EGL_NO_NATIVE_FENCE_FD_ANDROID, EGL_NONE };
+    EGLSyncKHR sync;
+    int fence_fd = -1;
+
+    if (!xwl_screen->glamor || !xwl_pixmap || !xwl_pixmap->bo)
+        return FALSE;
+
+    if (have_native_fence < 0)
+        have_native_fence = epoxy_has_egl_extension(xwl_screen->egl_display,
+                                                    "EGL_ANDROID_native_fence_sync");
+    if (!have_native_fence)
+        return FALSE;
+
+    xwl_glamor_egl_make_current(xwl_screen);
+    sync = eglCreateSyncKHR(xwl_screen->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
+    if (sync == EGL_NO_SYNC_KHR)
+        return FALSE;
+    /* The native fence only exists once the fence command has been flushed. */
+    glFlush();
+    fence_fd = eglDupNativeFenceFDANDROID(xwl_screen->egl_display, sync);
+    eglDestroySyncKHR(xwl_screen->egl_display, sync);
+    if (fence_fd < 0)
+        return FALSE;
+
+    xwl_glamor_dmabuf_import_sync_file(pixmap, fence_fd);
+    return TRUE;
+#else
+    return FALSE;
+#endif /* DMA_BUF_IOCTL_IMPORT_SYNC_FILE */
+}
+
 Bool
 xwl_glamor_gbm_set_syncpts(struct xwl_window *xwl_window, PixmapPtr pixmap)
 {

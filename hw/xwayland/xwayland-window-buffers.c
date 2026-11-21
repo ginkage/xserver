@@ -380,9 +380,11 @@ xwl_window_handle_pixmap_sync(struct xwl_window *xwl_window,
             implicit_sync = FALSE;
             /* wait until the release fence is available before re-using this buffer */
             xwl_glamor_gbm_wait_release_fence(xwl_window, pixmap, xwl_window_buffer);
-        } else {
+        } else if (!xwl_glamor_gbm_attach_render_fence(pixmap)) {
             /* If glamor does not support implicit sync and we can't use
-             * explicit sync, wait for the GPU to be idle before presenting.
+             * explicit sync, have the compositor wait for the rendering by
+             * attaching a fence for it to the buffer (above), or else wait for
+             * the GPU to be idle before presenting.
              * Note that buffer re-use will still be unsynchronized :(
              */
             glamor_finish(xwl_screen->screen);
