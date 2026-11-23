@@ -1,3 +1,13 @@
+xwayland (2:24.1.10-1+cixmali6) resolute; urgency=medium
+
+  * xwayland: without implicit sync, send a copied pixmap's
+    PresentIdleNotify once the GPU has finished the copy (a native fence
+    watched from the main loop) instead of right away. Clients could render
+    a later frame into the pixmap before the copy ran, and frames appeared
+    out of order (games looked torn).
+
+ -- Ivan Podogov <ginkage.uk@gmail.com>  Mon, 23 Nov 2026 08:23:50 +0000
+
 xwayland (2:24.1.10-1+cixmali5) resolute; urgency=medium
 
   * glamor: on GLES without GL_EXT_blend_func_extended, don't declare
