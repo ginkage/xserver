@@ -130,7 +130,8 @@ present_execute_copy(present_vblank_ptr vblank, uint64_t crtc_msc)
 #endif /* DRI3 */
     {
         screen_priv->flush(window);
-        present_pixmap_idle(vblank->pixmap, vblank->window, vblank->serial, vblank->idle_fence);
+        if (!screen_priv->defer_idle || !screen_priv->defer_idle(vblank))
+            present_pixmap_idle(vblank->pixmap, vblank->window, vblank->serial, vblank->idle_fence);
     }
 }
 

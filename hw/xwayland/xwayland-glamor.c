@@ -187,6 +187,8 @@ xwl_glamor_get_fence(struct xwl_screen *xwl_screen)
     attribs[2] = EGL_NONE;
     sync = eglCreateSyncKHR(xwl_screen->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
     if (sync != EGL_NO_SYNC_KHR) {
+        /* Some drivers (the Arm Mali one) only create the native fence once the fence command is flushed. */
+        glFlush();
         fence_fd = eglDupNativeFenceFDANDROID(xwl_screen->egl_display, sync);
         eglDestroySyncKHR(xwl_screen->egl_display, sync);
     }

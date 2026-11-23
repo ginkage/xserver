@@ -728,6 +728,74 @@ xwl_present_flush_fenced(WindowPtr window)
     return fence;
 }
 
+#ifdef XWL_HAS_GLAMOR
+/* A pixmap whose copy into a window is still being read by the GPU: its idle notification waits for that. */
+struct xwl_present_deferred_idle {
+    int fence_fd;
+    PixmapPtr pixmap;
+    XID window_id;
+    CARD32 serial;
+    struct present_fence *idle_fence;
+};
+
+static void
+xwl_present_deferred_idle_done(int fd, int ready, void *data)
+{
+    struct xwl_present_deferred_idle *deferred = data;
+    WindowPtr window = NULL;
+
+    SetNotifyFd(fd, NULL, 0, NULL);
+    close(fd);
+    /* The window may have gone away meanwhile; the idle fence is still triggered then. */
+    if (dixLookupWindow(&window, deferred->window_id, serverClient, DixReadAccess) != Success)
+        window = NULL;
+    present_pixmap_idle(deferred->pixmap, window, deferred->serial, deferred->idle_fence);
+    present_fence_destroy(deferred->idle_fence);
+    dixDestroyPixmap(deferred->pixmap, deferred->pixmap->drawable.id);
+    free(deferred);
+}
+
+/* Without implicit sync (the Arm Mali driver: kbase attaches no fences to dma-bufs), the client's next
+ * rendering into a pixmap isn't ordered after the copy that Present just queued from it: once told the pixmap
+ * is idle, the client can render a later frame into it before the GPU has run the copy, which then shows that
+ * frame (or parts of it) in place of the presented one, and frames appear out of order. Send the idle
+ * notification once a fence after the copy has signalled instead, from the main loop, so the server doesn't
+ * wait for the GPU. */
+static Bool
+xwl_present_defer_idle(present_vblank_ptr vblank)
+{
+    struct xwl_screen *xwl_screen = xwl_screen_get(vblank->window->drawable.pScreen);
+    struct xwl_present_deferred_idle *deferred;
+    int fence_fd;
+
+    if (!xwl_screen->glamor || xwl_glamor_supports_implicit_sync(xwl_screen) || !vblank->pixmap)
+        return FALSE;
+
+    /* The copy has been flushed (present_execute_copy), so the fence follows it. */
+    fence_fd = xwl_glamor_get_fence(xwl_screen);
+    if (fence_fd < 0) {
+        glamor_finish(xwl_screen->screen);
+        return FALSE;
+    }
+
+    deferred = calloc(1, sizeof(*deferred));
+    if (!deferred) {
+        close(fence_fd);
+        glamor_finish(xwl_screen->screen);
+        return FALSE;
+    }
+    deferred->fence_fd = fence_fd;
+    deferred->pixmap = vblank->pixmap;
+    deferred->pixmap->refcnt++;
+    deferred->window_id = vblank->window->drawable.id;
+    deferred->serial = vblank->serial;
+    deferred->idle_fence = vblank->idle_fence;
+    vblank->idle_fence = NULL;
+    SetNotifyFd(fence_fd, xwl_present_deferred_idle_done, X_NOTIFY_READ, deferred);
+    return TRUE;
+}
+#endif /* XWL_HAS_GLAMOR */
+
 static Bool
 xwl_present_check_flip(RRCrtcPtr crtc,
                        WindowPtr present_window,
@@ -1386,6 +1454,9 @@ xwl_present_init(ScreenPtr screen)
     screen_priv->queue_vblank = xwl_present_queue_vblank;
     screen_priv->flush = xwl_present_flush;
     screen_priv->flush_fenced = xwl_present_flush_fenced;
+#ifdef XWL_HAS_GLAMOR
+    screen_priv->defer_idle = xwl_present_defer_idle;
+#endif /* XWL_HAS_GLAMOR */
     screen_priv->re_execute = xwl_present_re_execute;
 
     screen_priv->abort_vblank = xwl_present_abort_vblank;

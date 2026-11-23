@@ -152,6 +152,10 @@ typedef int (*present_priv_queue_vblank_ptr)(ScreenPtr screen,
                                              uint64_t msc);
 typedef void (*present_priv_flush_ptr)(WindowPtr window);
 typedef int (*present_priv_flush_fenced_ptr)(WindowPtr window);
+/* Called after a copy instead of sending the pixmap's idle notification right away. TRUE if the screen
+ * took over sending it (with present_pixmap_idle(), once the copy has finished reading the pixmap); it then
+ * owns vblank->idle_fence (and sets it to NULL) and holds its own reference to vblank->pixmap. */
+typedef Bool (*present_priv_defer_idle_ptr)(present_vblank_ptr vblank);
 typedef void (*present_priv_re_execute_ptr)(present_vblank_ptr vblank);
 
 typedef void (*present_priv_abort_vblank_ptr)(ScreenPtr screen,
@@ -197,6 +201,7 @@ struct present_screen_priv {
     present_priv_queue_vblank_ptr       queue_vblank;
     present_priv_flush_ptr              flush;
     present_priv_flush_fenced_ptr       flush_fenced;
+    present_priv_defer_idle_ptr         defer_idle;
     present_priv_re_execute_ptr         re_execute;
 
     present_priv_abort_vblank_ptr       abort_vblank;
